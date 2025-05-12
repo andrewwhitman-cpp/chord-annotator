@@ -194,16 +194,31 @@
         <div class="main-content">
             <div class="top-row">
                 <div class="file-section">
-                    <h3>File Operations</h3>
-                    <div class="file-input-section" style="display: flex; align-items: center; gap: 10px;">
-                        <label for="file-input">Load lyrics:</label>
-                        <input type="file" id="file-input" accept=".txt" style="flex: 1;">
-                    </div>
-                    
-                    <div class="file-buttons" style="margin-top: 10px;">
-                        <button id="save-btn">Save</button>
-                        <button id="clear-btn">Clear All</button>
-                    </div>
+                    <label for="file-input">Load Lyrics File:</label>
+                    <input type="file" id="file-input" accept=".txt">
+                    <button id="save-btn">Save Annotated Lyrics</button>
+                    <button id="clear-btn">Clear Annotations</button>
+                    <label for="key-selector" style="margin-left:20px;">Song Key:</label>
+                    <select id="key-selector">
+                        <option value="none">Select a key</option>
+                        <option value="C">C</option>
+                        <!-- <option value="C#">C#</option> -->
+                        <option value="Db">Db</option>
+                        <option value="D">D</option>
+                        <!-- <option value="D#">D#</option> -->
+                        <option value="Eb">Eb</option>
+                        <option value="E">E</option>
+                        <option value="F">F</option>
+                        <!-- <option value="F#">F#</option> -->
+                        <option value="Gb">Gb</option>
+                        <option value="G">G</option>
+                        <!-- <option value="G#">G#</option> -->
+                        <option value="Ab">Ab</option>
+                        <option value="A">A</option>
+                        <!-- <option value="A#">A#</option> -->
+                        <option value="Bb">Bb</option>
+                        <option value="B">B</option>
+                    </select>
                 </div>
             </div>
             
