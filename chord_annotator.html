@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyrics Chord Annotator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .app-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .main-content {
+            display: flex;
+            gap: 20px;
+            flex-direction: column;
+        }
+        .top-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .file-section {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex: 1;
+        }
+        .chord-lyrics-container {
+            display: flex;
+            gap: 20px;
+        }
+        .chord-section, .preview-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex: 1;
+        }
+        .lyrics-display {
+            white-space: pre-wrap;
+            line-height: 2;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 300px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .word {
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .word:hover {
+            background-color: #e0f7fa;
+        }
+        .word.selected {
+            background-color: #b3e5fc;
+        }
+        .word.has-chord {
+            color: #0277bd;
+            font-weight: bold;
+        }
+        .chord-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .chord-types {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            background-color: #e0e0e0;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #d0d0d0;
+        }
+        button.selected {
+            background-color: #2196f3;
+            color: white;
+        }
+        .file-input-section {
+            margin-bottom: 15px;
+        }
+        .file-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .file-buttons button {
+            flex: 1;
+            padding: 10px;
+            background-color: #4caf50;
+            color: white;
+        }
+        .file-buttons button:hover {
+            background-color: #388e3c;
+        }
+        .file-buttons button:last-child {
+            background-color: #f44336;
+        }
+        .file-buttons button:last-child:hover {
+            background-color: #d32f2f;
+        }
+        .chord-preview {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #e8f5e9;
+            border-radius: 4px;
+        }
+        /* Toggle switch styles */
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(32px);
+        }
+        /* Notation toggle styles */
+        .flat-notation {
+            display: block;
+        }
+        .sharp-notation {
+            display: none;
+        }
+        body.use-sharps .flat-notation {
+            display: none;
+        }
+        body.use-sharps .sharp-notation {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="app-header">
+            <h1>Lyrics Chord Annotator</h1>
+            <p>Click on words to add chords to your lyrics</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="top-row">
+                <div class="file-section">
+                    <h3>File Operations</h3>
+                    <div class="file-input-section" style="display: flex; align-items: center; gap: 10px;">
+                        <label for="file-input">Load lyrics:</label>
+                        <input type="file" id="file-input" accept=".txt" style="flex: 1;">
+                    </div>
+                    
+                    <div class="file-buttons" style="margin-top: 10px;">
+                        <button id="save-btn">Save</button>
+                        <button id="clear-btn">Clear All</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chord-lyrics-container">
+                <div class="chord-section">
+                    <h2>Chord Selection</h2>
+                    <div class="chord-preview" id="chord-preview">No chord selected</div>
+                    
+                    <div class="notation-toggle" style="margin: 15px 0; display: flex; align-items: center; justify-content: center;">
+                        <span style="margin-right: 10px;">Notation:</span>
+                        <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 28px;">
+                            <input type="checkbox" id="notation-toggle">
+                            <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;">
+                                <span class="slider-text" style="position: absolute; top: 5px; left: 7px; font-size: 12px;">♭</span>
+                                <span class="slider-text" style="position: absolute; top: 5px; right: 7px; font-size: 12px;">#</span>
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <h3>Chord Root</h3>
+                    <div class="chord-buttons">
+                        <button class="chord-root">A</button>
+                        <button class="chord-root sharp-notation">A#</button>
+                        <button class="chord-root flat-notation">Bb</button>
+                        <button class="chord-root">B</button>
+                        <button class="chord-root">C</button>
+                        <button class="chord-root sharp-notation">C#</button>
+                        <button class="chord-root flat-notation">Db</button>
+                        <button class="chord-root">D</button>
+                        <button class="chord-root sharp-notation">D#</button>
+                        <button class="chord-root flat-notation">Eb</button>
+                        <button class="chord-root">E</button>
+                        <button class="chord-root">F</button>
+                        <button class="chord-root sharp-notation">F#</button>
+                        <button class="chord-root flat-notation">Gb</button>
+                        <button class="chord-root">G</button>
+                        <button class="chord-root sharp-notation">G#</button>
+                        <button class="chord-root flat-notation">Ab</button>
+                    </div>
+                    
+                    <h3>Chord Type</h3>
+                    <div class="chord-types">
+                        <button class="chord-type">Major</button>
+                        <button class="chord-type">m</button>
+                        <button class="chord-type">7</button>
+                        <button class="chord-type">maj7</button>
+                        <button class="chord-type">m7</button>
+                        <button class="chord-type">dim</button>
+                        <button class="chord-type">aug</button>
+                        <button class="chord-type">sus4</button>
+                        <button class="chord-type">sus2</button>
+                        <button class="chord-type">add9</button>
+                        <button class="chord-type">6</button>
+                        <button class="chord-type">m6</button>
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        <button id="remove-chord-btn" style="background-color: #ff9800; color: white; width: 100%;">Remove Chord</button>
+                    </div>
+                </div>
+                
+                <div class="preview-section">
+                    <h2>Lyrics Preview</h2>
+                    <div class="lyrics-display" id="lyrics-display">
+                        <p>Load a lyrics file to begin...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="chord_annotator.js"></script>
+</body>
+</html>
