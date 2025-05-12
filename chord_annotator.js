@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Keyboard shortcut for E chord
+        // Keyboard shortcuts
         document.addEventListener('keydown', function(e) {
             // Ignore if typing in an input or textarea
             if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
@@ -131,9 +131,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 const degree = parseInt(e.key, 10) - 1;
                 const note = scale[degree];
+                // Chord type mapping for scale degrees
+                const degreeChordTypes = ['Major', 'm', 'm', 'Major', 'Major', 'm', 'dim'];
+                const chordTypeText = degreeChordTypes[degree];
                 if (note) {
+                    // Select the chord root button
                     chordRootButtons.forEach(btn => {
                         if (btn.textContent === note && btn.offsetParent !== null) {
+                            btn.click();
+                        }
+                    });
+                    // Select the chord type button
+                    chordTypeButtons.forEach(btn => {
+                        if (btn.textContent === chordTypeText) {
                             btn.click();
                         }
                     });
