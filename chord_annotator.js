@@ -66,6 +66,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 selectChordType(button);
             });
         });
+
+        // Keyboard shortcut for E chord
+        document.addEventListener('keydown', function(e) {
+            // Ignore if typing in an input or textarea
+            if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
+            const key = e.key.toLowerCase();
+            const chordKeys = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+            if (chordKeys.includes(key)) {
+                chordRootButtons.forEach(btn => {
+                    if (btn.textContent.toLowerCase() === key && btn.offsetParent !== null) {
+                        btn.click();
+                    }
+                });
+            }
+        });
     }
     
     function updateNotationDisplay() {
