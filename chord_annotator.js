@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const notationToggle = document.getElementById('notation-toggle');
     const chordRootButtons = document.querySelectorAll('.chord-root');
     const chordTypeButtons = document.querySelectorAll('.chord-type');
+    const keySelector = document.getElementById('key-selector');
+    let selectedSongKey = keySelector ? keySelector.value : 'C';
     
     // Enharmonic equivalents mapping for converting between notations
     const enharmonicMap = {
@@ -46,6 +48,24 @@ document.addEventListener('DOMContentLoaded', function() {
         saveBtn.addEventListener('click', saveAnnotatedLyrics);
         clearBtn.addEventListener('click', clearAnnotations);
         removeChordBtn.addEventListener('click', removeSelectedChord);
+        if (keySelector) {
+            keySelector.addEventListener('change', function() {
+                selectedSongKey = this.value;
+                // Automatically set notation toggle based on key categorization
+                const sharpKeys = ['G','D','A','E','B'];
+                const flatKeys = ['C','F','Bb','Eb','Ab','Db','Gb'];
+                // Use the same mapping as in majorScales
+                if (sharpKeys.includes(selectedSongKey)) {
+                    useSharps = true;
+                    notationToggle.checked = true;
+                } else if (flatKeys.includes(selectedSongKey)) {
+                    useSharps = false;
+                    notationToggle.checked = false;
+                }
+                updateNotationDisplay();
+                updateChordSelectionUI();
+            });
+        }
         
         // Notation toggle
         notationToggle.addEventListener('change', function() {
@@ -65,6 +85,70 @@ document.addEventListener('DOMContentLoaded', function() {
             button.addEventListener('click', () => {
                 selectChordType(button);
             });
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ignore if typing in an input or textarea
+            if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
+            const key = e.key.toLowerCase();
+            const chordKeys = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+            if (chordKeys.includes(key)) {
+                chordRootButtons.forEach(btn => {
+                    if (btn.textContent.toLowerCase() === key && btn.offsetParent !== null) {
+                        btn.click();
+                    }
+                });
+            }
+            // Keyboard shortcuts for scale degrees 1-7
+            if (/^[1-7]$/.test(e.key)) {
+                const majorScales = {
+                    sharps: {
+                        // circle of fifths
+                        'C': ['C','D','E','F','G','A','B'],
+                        'G': ['G','A','B','C','D','E','F#'],
+                        'D': ['D','E','F#','G','A','B','C#'],
+                        'A': ['A','B','C#','D','E','F#','G#'],
+                        'E': ['E','F#','G#','A','B','C#','D#'],
+                        'B': ['B','C#','D#','E','F#','G#','A#'],
+                    },
+                    flats: {
+                        // circle of fourths
+                        'C': ['C','D','E','F','G','A','B'],
+                        'F': ['F','G','A','Bb','C','D','E'],
+                        'Bb': ['Bb','C','D','Eb','F','G','A'],
+                        'Eb': ['Eb','F','G','Ab','Bb','C','D'],
+                        'Ab': ['Ab','Bb','C','Db','Eb','F','G'],
+                        'Db': ['Db','Eb','F','Gb','Ab','Bb','C'],
+                        'Gb': ['Gb','Ab','Bb','B','Db','Eb','F']
+                    }
+                };
+                let scale;
+                if (useSharps) {
+                    scale = majorScales.sharps[selectedSongKey] || majorScales.sharps['C'];
+                } else {
+                    scale = majorScales.flats[selectedSongKey] || majorScales.flats['C'];
+                }
+                const degree = parseInt(e.key, 10) - 1;
+                const note = scale[degree];
+                // Chord type mapping for scale degrees
+                const degreeChordTypes = ['Major', 'm', 'm', 'Major', 'Major', 'm', 'dim'];
+                const chordTypeText = degreeChordTypes[degree];
+                if (note) {
+                    // Select the chord root button
+                    chordRootButtons.forEach(btn => {
+                        if (btn.textContent === note && btn.offsetParent !== null) {
+                            btn.click();
+                        }
+                    });
+                    // Select the chord type button
+                    chordTypeButtons.forEach(btn => {
+                        if (btn.textContent === chordTypeText) {
+                            btn.click();
+                        }
+                    });
+                }
+            }
         });
     }
     
@@ -337,55 +421,43 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Please load a lyrics file first.');
             return;
         }
-        
         // Create annotated text
         let annotatedText = '';
         const lines = originalText.split('\n');
         let wordCounter = 0;
-        
         lines.forEach(line => {
             if (line.trim() === '') {
                 annotatedText += '\n';
                 return;
             }
-            
             let annotatedLine = '';
             const words = line.split(/\s+/);
-            
             words.forEach(word => {
                 if (word === '') return;
-                
                 const chord = chordAnnotations[wordCounter];
                 if (chord) {
-                    // Convert chord root to the current notation preference if it has an enharmonic equivalent
                     let displayRoot = chord.root;
                     if (enharmonicMap[displayRoot]) {
-                        // If the current root doesn't match the current notation preference, convert it
                         const hasSharp = displayRoot.includes('#');
                         const hasFlat = displayRoot.includes('b');
-                        
                         if ((useSharps && hasFlat) || (!useSharps && hasSharp)) {
                             displayRoot = enharmonicMap[displayRoot];
                         }
                     }
-                    
                     annotatedLine += `[${displayRoot}${chord.type}]${word} `;
                 } else {
                     annotatedLine += `${word} `;
                 }
-                
                 wordCounter++;
             });
-            
             annotatedText += annotatedLine.trim() + '\n';
         });
-        
+        // Add song key info at the top
+        annotatedText = `Song Key: ${selectedSongKey}\n` + annotatedText;
         // Create download link
         const blob = new Blob([annotatedText], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        
-        // Get original filename and add '-chords' suffix
         let filename = 'lyrics-chords.txt';
         if (fileInput.files[0]) {
             const originalFilename = fileInput.files[0].name;
@@ -394,11 +466,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const baseName = filenameParts.join('.');
             filename = `${baseName}-chords.${extension}`;
         }
-        
         a.href = url;
         a.download = filename;
         a.click();
-        
         URL.revokeObjectURL(url);
     }
 });
