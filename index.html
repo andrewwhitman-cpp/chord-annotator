@@ -198,6 +198,13 @@
                     <input type="file" id="file-input" accept=".txt">
                     <button id="save-btn">Save Annotated Lyrics</button>
                     <button id="clear-btn">Clear Annotations</button>
+                    <br><br>
+                    <button id="toggle-manual-input">Type Lyrics Manually</button>
+                    <div id="manual-input-section" style="display:none; margin-top:10px;">
+                        <label for="manual-lyrics">Enter Lyrics:</label>
+                        <textarea id="manual-lyrics" rows="8" style="width:100%;"></textarea>
+                        <button id="load-manual-lyrics">Load Typed Lyrics</button>
+                    </div>
                     <label for="key-selector" style="margin-left:20px;">Song Key:</label>
                     <select id="key-selector">
                         <option value="none">Select a key</option>

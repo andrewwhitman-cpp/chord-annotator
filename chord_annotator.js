@@ -10,6 +10,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const chordRootButtons = document.querySelectorAll('.chord-root');
     const chordTypeButtons = document.querySelectorAll('.chord-type');
     const keySelector = document.getElementById('key-selector');
+    const toggleManualInputBtn = document.getElementById('toggle-manual-input');
+    const manualInputSection = document.getElementById('manual-input-section');
+    const manualLyricsTextarea = document.getElementById('manual-lyrics');
+    const loadManualLyricsBtn = document.getElementById('load-manual-lyrics');
     let selectedSongKey = keySelector ? keySelector.value : 'C';
     
     // Enharmonic equivalents mapping for converting between notations
@@ -54,7 +58,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Automatically set notation toggle based on key categorization
                 const sharpKeys = ['G','D','A','E','B'];
                 const flatKeys = ['C','F','Bb','Eb','Ab','Db','Gb'];
-                // Use the same mapping as in majorScales
                 if (sharpKeys.includes(selectedSongKey)) {
                     useSharps = true;
                     notationToggle.checked = true;
@@ -64,6 +67,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 updateNotationDisplay();
                 updateChordSelectionUI();
+            });
+        }
+        // Manual input toggle
+        if (toggleManualInputBtn && manualInputSection) {
+            toggleManualInputBtn.addEventListener('click', function() {
+                if (manualInputSection.style.display === 'none') {
+                    manualInputSection.style.display = 'block';
+                    toggleManualInputBtn.textContent = 'Hide Manual Input';
+                } else {
+                    manualInputSection.style.display = 'none';
+                    toggleManualInputBtn.textContent = 'Type Lyrics Manually';
+                }
+            });
+        }
+        // Load manual lyrics
+        if (loadManualLyricsBtn && manualLyricsTextarea) {
+            loadManualLyricsBtn.addEventListener('click', function() {
+                const text = manualLyricsTextarea.value;
+                if (text.trim() !== '') {
+                    originalText = text;
+                    displayLyrics(originalText);
+                }
             });
         }
         
